@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Pipe Heat Exchanger Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel, .output-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-panel h2, .output-panel h2 {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .input-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+
+        input[type="number"], input[type="text"], select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .result-card h4 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .result-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-card .unit {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: 400px;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #4a5568;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .chart-container canvas {
+            max-height: 350px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c53030;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #2d7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2d7d32;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Double Pipe Heat Exchanger Simulation</h1>
+            <p>Advanced thermal analysis and performance optimization tool</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-panel">
+                <h2>Input Parameters</h2>
+                
+                <div class="input-section">
+                    <h3>🔧 Geometry Parameters</h3>
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="inner_diameter">Inner Pipe Diameter (m)</label>
+                            <input type="number" id="inner_diameter" value="0.05" step="0.001">
+                        </div>
+                        <div class="form-group">
+                            <label for="outer_inner_diameter">Outer Pipe Inner Diameter (m)</label>
+                            <input type="number" id="outer_inner_diameter" value="0.08" step="0.001">
+                        </div>
+                        <div class="form-group">
+                            <label for="pipe_length">Pipe Length (m)</label>
+                            <input type="number" id="pipe_length" value="10" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="wall_thickness">Wall Thickness (m)</label>
+                            <input type="number" id="wall_thickness" value="0.002" step="0.0001">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h3>🌡️ Hot Fluid Properties</h3>
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="hot_fluid_name">Fluid Type</label>
+                            <select id="hot_fluid_name">
+                                <option value="water">Water</option>
+                                <option value="oil">Oil</option>
+                                <option value="air">Air</option>
+                                <option value="steam">Steam</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_inlet_temp">Inlet Temperature (°C)</label>
+                            <input type="number" id="hot_inlet_temp" value="80" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_mass_flow">Mass Flow Rate (kg/s)</label>
+                            <input type="number" id="hot_mass_flow" value="2.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_density">Density (kg/m³)</label>
+                            <input type="number" id="hot_density" value="1000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_cp">Specific Heat (J/kg·K)</label>
+                            <input type="number" id="hot_cp" value="4180" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_viscosity">Dynamic Viscosity (Pa·s)</label>
+                            <input type="number" id="hot_viscosity" value="0.001" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="hot_conductivity">Thermal Conductivity (W/m·K)</label>
+                            <input type="number" id="hot_conductivity" value="0.6" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h3>❄️ Cold Fluid Properties</h3>
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="cold_fluid_name">Fluid Type</label>
+                            <select id="cold_fluid_name">
+                                <option value="water">Water</option>
+                                <option value="oil">Oil</option>
+                                <option value="air">Air</option>
+                                <option value="steam">Steam</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_inlet_temp">Inlet Temperature (°C)</label>
+                            <input type="number" id="cold_inlet_temp" value="20" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_mass_flow">Mass Flow Rate (kg/s)</label>
+                            <input type="number" id="cold_mass_flow" value="1.5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_density">Density (kg/m³)</label>
+                            <input type="number" id="cold_density" value="1000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_cp">Specific Heat (J/kg·K)</label>
+                            <input type="number" id="cold_cp" value="4180" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_viscosity">Dynamic Viscosity (Pa·s)</label>
+                            <input type="number" id="cold_viscosity" value="0.001" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cold_conductivity">Thermal Conductivity (W/m·K)</label>
+                            <input type="number" id="cold_conductivity" value="0.6" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h3>🔁 Flow Configuration</h3>
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="flow_arrangement">Flow Arrangement</label>
+                            <select id="flow_arrangement">
+                                <option value="counterflow">Counterflow</option>
+                                <option value="parallel">Parallel Flow</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="wall_conductivity">Wall Thermal Conductivity (W/m·K)</label>
+                            <input type="number" id="wall_conductivity" value="50" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group1">
+                    <button class="btn btn-primary" onclick="runSimulation()">🚀 Run Simulation</button>
+                </div> 
+                <div class="button-group2">    
+                    <button class="btn btn-secondary" onclick="resetForm()">🔄 Reset</button>
+                </div>    
+                <div class="button-group3">    
+                    <button class="btn btn-export" onclick="exportResults()">📊 Export as CSV</button>
+                </div>    
+                <div class="button-group4">    
+                    <button class="btn btn-export" onclick="exportAsImage()">📸 Export as Image</button>
+                </div>
+            </div>
+
+            <div class="output-panel">
+                <h2>Results & Analysis</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Running simulation...</p>
+                </div>
+
+                <div id="results" style="display: none;">
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <h4>Heat Duty</h4>
+                            <div class="value" id="heat_duty">-</div>
+                            <div class="unit">kW</div>
+                        </div>
+                        <div class="result-card">
+                            <h4>Effectiveness</h4>
+                            <div class="value" id="effectiveness">-</div>
+                            <div class="unit">-</div>
+                        </div>
+                        <div class="result-card">
+                            <h4>Overall U</h4>
+                            <div class="value" id="overall_u">-</div>
+                            <div class="unit">W/m²·K</div>
+                        </div>
+                        <div class="result-card">
+                            <h4>LMTD</h4>
+                            <div class="value" id="lmtd">-</div>
+                            <div class="unit">°C</div>
+                        </div>
+                        <div class="result-card">
+                            <h4>Hot Outlet Temp</h4>
+                            <div class="value" id="hot_outlet_temp">-</div>
+                            <div class="unit">°C</div>
+                        </div>
+                        <div class="result-card">
+                            <h4>Cold Outlet Temp</h4>
+                            <div class="value" id="cold_outlet_temp">-</div>
+                            <div class="unit">°C</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Temperature Profile</h3>
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Heat Transfer Coefficient Profile</h3>
+                        <canvas id="htcChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Pressure Drop Profile</h3>
+                        <canvas id="pressureChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Heat Flux Distribution</h3>
+                        <canvas id="heatFluxChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="error" class="error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulation data storage
+        let simulationData = {};
+        let temperatureChart, htcChart, pressureChart, heatFluxChart;
+
+        // Chart configurations
+        const chartConfig = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Length (m)',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                y: {
+                    display: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            }
+        };
+
+        // Initialize charts
+        function initializeCharts() {
+            // Temperature Chart
+            const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+            temperatureChart = new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Hot Fluid Temperature',
+                        data: [],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }, {
+                        label: 'Cold Fluid Temperature',
+                        data: [],
+                        borderColor: '#4ecdc4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Heat Transfer Coefficient Chart
+            const htcCtx = document.getElementById('htcChart').getContext('2d');
+            htcChart = new Chart(htcCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Overall U-value',
+                        data: [],
+                        borderColor: '#9b59b6',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }, {
+                        label: 'Hot Side HTC',
+                        data: [],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: false
+                    }, {
+                        label: 'Cold Side HTC',
+                        data: [],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: false
+                    }]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Heat Transfer Coefficient (W/m²·K)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Pressure Drop Chart
+            const pressureCtx = document.getElementById('pressureChart').getContext('2d');
+            pressureChart = new Chart(pressureCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Hot Fluid Pressure',
+                        data: [],
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }, {
+                        label: 'Cold Fluid Pressure',
+                        data: [],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Pressure (Pa)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Heat Flux Chart
+            const heatFluxCtx = document.getElementById('heatFluxChart').getContext('2d');
+            heatFluxChart = new Chart(heatFluxCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Heat Flux',
+                        data: [],
+                        borderColor: '#e67e22',
+                        backgroundColor: 'rgba(230, 126, 34, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true
+                    }, {
+                        label: 'Temperature Difference',
+                        data: [],
+                        borderColor: '#8e44ad',
+                        backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    ...chartConfig,
+                    scales: {
+                        ...chartConfig.scales,
+                        y: {
+                            ...chartConfig.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Heat Flux (W/m²)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Temperature Difference (°C)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Run simulation function
+        async function runSimulation() {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            
+            // Show loading
+            loading.classList.add('active');
+            results.style.display = 'none';
+            error.style.display = 'none';
+
+            try {
+                // Collect input data
+                const inputData = {
+                    geometry: {
+                        inner_diameter: parseFloat(document.getElementById('inner_diameter').value),
+                        outer_inner_diameter: parseFloat(document.getElementById('outer_inner_diameter').value),
+                        pipe_length: parseFloat(document.getElementById('pipe_length').value),
+                        wall_thickness: parseFloat(document.getElementById('wall_thickness').value)
+                    },
+                    hot_fluid: {
+                        name: document.getElementById('hot_fluid_name').value,
+                        inlet_temp: parseFloat(document.getElementById('hot_inlet_temp').value),
+                        mass_flow: parseFloat(document.getElementById('hot_mass_flow').value),
+                        density: parseFloat(document.getElementById('hot_density').value),
+                        cp: parseFloat(document.getElementById('hot_cp').value),
+                        viscosity: parseFloat(document.getElementById('hot_viscosity').value),
+                        conductivity: parseFloat(document.getElementById('hot_conductivity').value)
+                    },
+                    cold_fluid: {
+                        name: document.getElementById('cold_fluid_name').value,
+                        inlet_temp: parseFloat(document.getElementById('cold_inlet_temp').value),
+                        mass_flow: parseFloat(document.getElementById('cold_mass_flow').value),
+                        density: parseFloat(document.getElementById('cold_density').value),
+                        cp: parseFloat(document.getElementById('cold_cp').value),
+                        viscosity: parseFloat(document.getElementById('cold_viscosity').value),
+                        conductivity: parseFloat(document.getElementById('cold_conductivity').value)
+                    },
+                    config: {
+                        flow_arrangement: document.getElementById('flow_arrangement').value,
+                        wall_conductivity: parseFloat(document.getElementById('wall_conductivity').value)
+                    }
+                };
+
+                // Simulate API call to Python backend
+                const response = await simulateBackendCall(inputData);
+                
+                if (response.success) {
+                    simulationData = response.data;
+                    displayResults(response.data);
+                    drawCharts(response.data);
+                } else {
+                    throw new Error(response.error || 'Simulation failed');
+                }
+
+            } catch (err) {
+                error.textContent = 'Error: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        // Simulate backend API call (replace with actual API call)
+        async function simulateBackendCall(inputData) {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            try {
+                // Simulate heat exchanger calculations
+                const results = calculateHeatExchanger(inputData);
+                return {
+                    success: true,
+                    data: results
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Heat exchanger calculation function
+        function calculateHeatExchanger(data) {
+            const { geometry, hot_fluid, cold_fluid, config } = data;
+            
+            // Basic calculations
+            const inner_area = Math.PI * geometry.inner_diameter;
+            const annulus_area = Math.PI * (geometry.outer_inner_diameter - geometry.inner_diameter);
+            
+            // Reynolds numbers
+            const hot_velocity = hot_fluid.mass_flow / (hot_fluid.density * inner_area);
+            const cold_velocity = cold_fluid.mass_flow / (cold_fluid.density * annulus_area);
+            
+            const re_hot = hot_fluid.density * hot_velocity * geometry.inner_diameter / hot_fluid.viscosity;
+            const re_cold = cold_fluid.density * cold_velocity * (geometry.outer_inner_diameter - geometry.inner_diameter) / cold_fluid.viscosity;
+            
+            // Prandtl numbers
+            const pr_hot = hot_fluid.cp * hot_fluid.viscosity / hot_fluid.conductivity;
+            const pr_cold = cold_fluid.cp * cold_fluid.viscosity / cold_fluid.conductivity;
+            
+            // Nusselt numbers (simplified correlations)
+            const nu_hot = re_hot > 2300 ? 0.023 * Math.pow(re_hot, 0.8) * Math.pow(pr_hot, 0.4) : 4.36;
+            const nu_cold = re_cold > 2300 ? 0.023 * Math.pow(re_cold, 0.8) * Math.pow(pr_cold, 0.4) : 4.36;
+            
+            // Heat transfer coefficients
+            const h_hot = nu_hot * hot_fluid.conductivity / geometry.inner_diameter;
+            const h_cold = nu_cold * cold_fluid.conductivity / (geometry.outer_inner_diameter - geometry.inner_diameter);
+            
+            // Overall heat transfer coefficient
+            const wall_resistance = Math.log(geometry.outer_inner_diameter / geometry.inner_diameter) / (2 * Math.PI * config.wall_conductivity);
+            const overall_u = 1 / (1/h_hot + wall_resistance + 1/h_cold);
+            
+            // Heat capacity rates
+            const c_hot = hot_fluid.mass_flow * hot_fluid.cp;
+            const c_cold = cold_fluid.mass_flow * cold_fluid.cp;
+            const c_min = Math.min(c_hot, c_cold);
+            const c_max = Math.max(c_hot, c_cold);
+            const c_ratio = c_min / c_max;
+            
+            // NTU and effectiveness
+            const ntu = overall_u * Math.PI * geometry.inner_diameter * geometry.pipe_length / c_min;
+            let effectiveness;
+            
+            if (config.flow_arrangement === 'counterflow') {
+                if (c_ratio === 1) {
+                    effectiveness = ntu / (1 + ntu);
+                } else {
+                    effectiveness = (1 - Math.exp(-ntu * (1 - c_ratio))) / (1 - c_ratio * Math.exp(-ntu * (1 - c_ratio)));
+                }
+            } else { // parallel flow
+                effectiveness = (1 - Math.exp(-ntu * (1 + c_ratio))) / (1 + c_ratio);
+            }
+            
+            // Heat duty
+            const q_max = c_min * (hot_fluid.inlet_temp - cold_fluid.inlet_temp);
+            const heat_duty = effectiveness * q_max;
+            
+            // Outlet temperatures
+            const hot_outlet_temp = hot_fluid.inlet_temp - heat_duty / c_hot;
+            const cold_outlet_temp = cold_fluid.inlet_temp + heat_duty / c_cold;
+            
+            // LMTD
+            const dt1 = hot_fluid.inlet_temp - cold_outlet_temp;
+            const dt2 = hot_outlet_temp - cold_fluid.inlet_temp;
+            const lmtd = (dt1 - dt2) / Math.log(dt1 / dt2);
+            
+            // Generate profile data
+            const segments = 50;
+            const length_profile = [];
+            const hot_temp_profile = [];
+            const cold_temp_profile = [];
+            const u_profile = [];
+            const h_hot_profile = [];
+            const h_cold_profile = [];
+            const pressure_hot_profile = [];
+            const pressure_cold_profile = [];
+            const heat_flux_profile = [];
+            const temp_diff_profile = [];
+            
+            for (let i = 0; i <= segments; i++) {
+                const x = i / segments;
+                const length = x * geometry.pipe_length;
+                length_profile.push(length);
+                
+                // Temperature profiles
+                const hot_temp = hot_fluid.inlet_temp - x * (hot_fluid.inlet_temp - hot_outlet_temp);
+                const cold_temp = cold_fluid.inlet_temp + x * (cold_outlet_temp - cold_fluid.inlet_temp);
+                hot_temp_profile.push(hot_temp);
+                cold_temp_profile.push(cold_temp);
+                
+                // Heat transfer coefficients (simplified constant values)
+                u_profile.push(overall_u);
+                h_hot_profile.push(h_hot);
+                h_cold_profile.push(h_cold);
+                
+                // Pressure profiles (simplified linear drop)
+                const pressure_drop_hot = 1000 * x; // Pa
+                const pressure_drop_cold = 800 * x; // Pa
+                pressure_hot_profile.push(101325 - pressure_drop_hot);
+                pressure_cold_profile.push(101325 - pressure_drop_cold);
+                
+                // Heat flux and temperature difference
+                const temp_diff = hot_temp - cold_temp;
+                temp_diff_profile.push(temp_diff);
+                heat_flux_profile.push(overall_u * temp_diff);
+            }
+            
+            return {
+                heat_duty: heat_duty / 1000, // Convert to kW
+                effectiveness: effectiveness,
+                overall_u: overall_u,
+                lmtd: lmtd,
+                hot_outlet_temp: hot_outlet_temp,
+                cold_outlet_temp: cold_outlet_temp,
+                ntu: ntu,
+                re_hot: re_hot,
+                re_cold: re_cold,
+                h_hot: h_hot,
+                h_cold: h_cold,
+                pressure_drop_hot: pressure_hot_profile[0] - pressure_hot_profile[pressure_hot_profile.length - 1],
+                pressure_drop_cold: pressure_cold_profile[0] - pressure_cold_profile[pressure_cold_profile.length - 1],
+                profiles: {
+                    length: length_profile,
+                    hot_temp: hot_temp_profile,
+                    cold_temp: cold_temp_profile,
+                    u_values: u_profile,
+                    h_hot: h_hot_profile,
+                    h_cold: h_cold_profile,
+                    pressure_hot: pressure_hot_profile,
+                    pressure_cold: pressure_cold_profile,
+                    heat_flux: heat_flux_profile,
+                    temp_diff: temp_diff_profile
+                }
+            };
+        }
+
+        // Display results function
+        function displayResults(data) {
+            document.getElementById('heat_duty').textContent = data.heat_duty.toFixed(2);
+            document.getElementById('effectiveness').textContent = data.effectiveness.toFixed(3);
+            document.getElementById('overall_u').textContent = data.overall_u.toFixed(1);
+            document.getElementById('lmtd').textContent = data.lmtd.toFixed(1);
+            document.getElementById('hot_outlet_temp').textContent = data.hot_outlet_temp.toFixed(1);
+            document.getElementById('cold_outlet_temp').textContent = data.cold_outlet_temp.toFixed(1);
+            
+            document.getElementById('results').style.display = 'block';
+        }
+
+        // Draw charts function
+        function drawCharts(data) {
+            updateTemperatureChart(data);
+            updateHeatTransferChart(data);
+            updatePressureChart(data);
+            updateHeatFluxChart(data);
+        }
+
+        // Update temperature chart
+        function updateTemperatureChart(data) {
+            temperatureChart.data.labels = data.profiles.length.map(l => l.toFixed(1));
+            temperatureChart.data.datasets[0].data = data.profiles.hot_temp;
+            temperatureChart.data.datasets[1].data = data.profiles.cold_temp;
+            temperatureChart.update('active');
+        }
+
+        // Update heat transfer coefficient chart
+        function updateHeatTransferChart(data) {
+            htcChart.data.labels = data.profiles.length.map(l => l.toFixed(1));
+            htcChart.data.datasets[0].data = data.profiles.u_values;
+            htcChart.data.datasets[1].data = data.profiles.h_hot;
+            htcChart.data.datasets[2].data = data.profiles.h_cold;
+            htcChart.update('active');
+        }
+
+        // Update pressure chart
+        function updatePressureChart(data) {
+            pressureChart.data.labels = data.profiles.length.map(l => l.toFixed(1));
+            pressureChart.data.datasets[0].data = data.profiles.pressure_hot;
+            pressureChart.data.datasets[1].data = data.profiles.pressure_cold;
+            pressureChart.update('active');
+        }
+
+        // Update heat flux chart
+        function updateHeatFluxChart(data) {
+            heatFluxChart.data.labels = data.profiles.length.map(l => l.toFixed(1));
+            heatFluxChart.data.datasets[0].data = data.profiles.heat_flux;
+            heatFluxChart.data.datasets[1].data = data.profiles.temp_diff;
+            heatFluxChart.update('active');
+        }
+
+        // Reset form function
+        function resetForm() {
+            document.getElementById('inner_diameter').value = '0.05';
+            document.getElementById('outer_inner_diameter').value = '0.08';
+            document.getElementById('pipe_length').value = '10';
+            document.getElementById('wall_thickness').value = '0.002';
+            
+            document.getElementById('hot_fluid_name').value = 'water';
+            document.getElementById('hot_inlet_temp').value = '80';
+            document.getElementById('hot_mass_flow').value = '2.0';
+            document.getElementById('hot_density').value = '1000';
+            document.getElementById('hot_cp').value = '4180';
+            document.getElementById('hot_viscosity').value = '0.001';
+            document.getElementById('hot_conductivity').value = '0.6';
+            
+            document.getElementById('cold_fluid_name').value = 'water';
+            document.getElementById('cold_inlet_temp').value = '20';
+            document.getElementById('cold_mass_flow').value = '1.5';
+            document.getElementById('cold_density').value = '1000';
+            document.getElementById('cold_cp').value = '4180';
+            document.getElementById('cold_viscosity').value = '0.001';
+            document.getElementById('cold_conductivity').value = '0.6';
+            
+            document.getElementById('flow_arrangement').value = 'counterflow';
+            document.getElementById('wall_conductivity').value = '50';
+            
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Preset fluid properties
+        const fluidProperties = {
+            water: {
+                density: 1000,
+                cp: 4180,
+                viscosity: 0.001,
+                conductivity: 0.6
+            },
+            oil: {
+                density: 850,
+                cp: 2100,
+                viscosity: 0.05,
+                conductivity: 0.15
+            },
+            air: {
+                density: 1.2,
+                cp: 1005,
+                viscosity: 0.000018,
+                conductivity: 0.025
+            },
+            steam: {
+                density: 0.6,
+                cp: 2080,
+                viscosity: 0.000012,
+                conductivity: 0.025
+            }
+        };
+
+        // Update fluid properties when fluid type changes
+        function updateFluidProperties(fluidType, prefix) {
+            const props = fluidProperties[fluidType];
+            if (props) {
+                document.getElementById(prefix + '_density').value = props.density;
+                document.getElementById(prefix + '_cp').value = props.cp;
+                document.getElementById(prefix + '_viscosity').value = props.viscosity;
+                document.getElementById(prefix + '_conductivity').value = props.conductivity;
+            }
+        }
+
+        // Add event listeners for fluid type changes
+        document.getElementById('hot_fluid_name').addEventListener('change', function(e) {
+            updateFluidProperties(e.target.value, 'hot');
+        });
+
+        document.getElementById('cold_fluid_name').addEventListener('change', function(e) {
+            updateFluidProperties(e.target.value, 'cold');
+        });
+
+        // Export results function
+        function exportResults() {
+            if (!simulationData || Object.keys(simulationData).length === 0) {
+                alert('No simulation data to export. Please run a simulation first.');
+                return;
+            }
+
+            const csvContent = generateCSV(simulationData);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'heat_exchanger_results.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Export page as image function
+        async function exportAsImage() {
+            try {
+                
+                // Configure html2canvas options
+                const options = {
+                    allowTaint: true,
+                    useCORS: true,
+                    scale: 2, // Higher resolution
+                    width: window.innerWidth,
+                    height: document.body.scrollHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    backgroundColor: '#ffffff'
+                };
+
+                // Generate canvas from the entire page
+                const canvas = await html2canvas(document.body, options);
+        
+                // Convert canvas to blob
+                canvas.toBlob(function(blob) {
+                    // Create download link
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.href = url;
+                    link.download = `heat_exchanger_simulation_${new Date().toISOString().slice(0, 10)}.png`;
+            
+                    // Trigger download
+                    document.body.appendChild(link);
+                    link.click();
+            
+                    // Cleanup
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(loadingDiv);
+                }, 'image/png');
+
+            } catch (error) {
+                console.error('Error exporting image:', error);
+                alert('Error generating image. Please try again.');
+        
+                // Remove loading indicator if it exists
+                const loadingDiv = document.querySelector('.loading[style*="position: fixed"]');
+                if (loadingDiv) {
+                    document.body.removeChild(loadingDiv);
+                }
+            }
+        }
+
+        // Generate CSV content
+        function generateCSV(data) {
+            let csv = 'Heat Exchanger Simulation Results\n\n';
+            
+            // Summary results
+            csv += 'Parameter,Value,Unit\n';
+            csv += `Heat Duty,${data.heat_duty.toFixed(2)},kW\n`;
+            csv += `Effectiveness,${data.effectiveness.toFixed(3)},-\n`;
+            csv += `Overall U,${data.overall_u.toFixed(1)},W/m²·K\n`;
+            csv += `LMTD,${data.lmtd.toFixed(1)},°C\n`;
+            csv += `Hot Outlet Temperature,${data.hot_outlet_temp.toFixed(1)},°C\n`;
+            csv += `Cold Outlet Temperature,${data.cold_outlet_temp.toFixed(1)},°C\n`;
+            csv += `NTU,${data.ntu.toFixed(2)},-\n`;
+            csv += `Hot Side Reynolds Number,${data.re_hot.toFixed(0)},-\n`;
+            csv += `Cold Side Reynolds Number,${data.re_cold.toFixed(0)},-\n`;
+            csv += `Hot Side HTC,${data.h_hot.toFixed(1)},W/m²·K\n`;
+            csv += `Cold Side HTC,${data.h_cold.toFixed(1)},W/m²·K\n\n`;
+            
+            // Profile data
+            csv += 'Length (m),Hot Temperature (°C),Cold Temperature (°C),U-value (W/m²·K),Heat Flux (W/m²),Hot Pressure (Pa),Cold Pressure (Pa)\n';
+            for (let i = 0; i < data.profiles.length.length; i++) {
+                csv += `${data.profiles.length[i].toFixed(2)},${data.profiles.hot_temp[i].toFixed(1)},${data.profiles.cold_temp[i].toFixed(1)},${data.profiles.u_values[i].toFixed(1)},${data.profiles.heat_flux[i].toFixed(1)},${data.profiles.pressure_hot[i].toFixed(1)},${data.profiles.pressure_cold[i].toFixed(1)}\n`;
+            }
+            
+            return csv;
+        }
+
+        // Add animation to result cards
+        function animateResultCards() {
+            const cards = document.querySelectorAll('.result-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        // Enhanced error handling
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.style.animation = 'slideDown 0.3s ease';
+        }
+
+        // Enhanced success message
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            successDiv.style.animation = 'slideDown 0.3s ease';
+            
+            const container = document.querySelector('.output-panel');
+            container.insertBefore(successDiv, container.firstChild);
+            
+            setTimeout(() => {
+                successDiv.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => {
+                    successDiv.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Input validation
+        function validateInputs() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            for (let input of inputs) {
+                const value = parseFloat(input.value);
+                if (isNaN(value) || value <= 0) {
+                    throw new Error(`Invalid value for ${input.previousElementSibling.textContent}: ${input.value}`);
+                }
+            }
+            
+            // Additional validation
+            const innerDiameter = parseFloat(document.getElementById('inner_diameter').value);
+            const outerInnerDiameter = parseFloat(document.getElementById('outer_inner_diameter').value);
+            
+            if (innerDiameter >= outerInnerDiameter) {
+                throw new Error('Inner pipe diameter must be less than outer pipe inner diameter');
+            }
+            
+            const hotInletTemp = parseFloat(document.getElementById('hot_inlet_temp').value);
+            const coldInletTemp = parseFloat(document.getElementById('cold_inlet_temp').value);
+            
+            if (hotInletTemp <= coldInletTemp) {
+                throw new Error('Hot inlet temperature must be greater than cold inlet temperature');
+            }
+        }
+
+        // Enhanced simulation function with validation
+        const originalRunSimulation = runSimulation;
+        runSimulation = async function() {
+            try {
+                validateInputs();
+                await originalRunSimulation();
+                showSuccess('Simulation completed successfully!');
+                animateResultCards();
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        // Initialize tooltips and help text
+        function initializeTooltips() {
+            const tooltips = {
+                'inner_diameter': 'Inner diameter of the tube through which one fluid flows',
+                'outer_inner_diameter': 'Inner diameter of the outer pipe (annulus)',
+                'pipe_length': 'Total length of the heat exchanger',
+                'wall_thickness': 'Thickness of the tube wall',
+                'hot_inlet_temp': 'Temperature of hot fluid entering the exchanger',
+                'cold_inlet_temp': 'Temperature of cold fluid entering the exchanger',
+                'hot_mass_flow': 'Mass flow rate of hot fluid',
+                'cold_mass_flow': 'Mass flow rate of cold fluid',
+                'flow_arrangement': 'Flow configuration: counterflow is more efficient'
+            };
+            
+            Object.keys(tooltips).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.title = tooltips[id];
+                }
+            });
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            initializeTooltips();
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    runSimulation();
+                }
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    resetForm();
+                }
+            });
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateY(-20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            
+            @keyframes slideUp {
+                from { transform: translateY(0); opacity: 1; }
+                to { transform: translateY(-20px); opacity: 0; }
+            }
+            
+            .result-card {
+                transition: all 0.3s ease;
+            }
+            
+            .result-card:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+            
+            .btn {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .btn:hover::before {
+                left: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
